@@ -16,6 +16,7 @@ const std::vector<const char*> kValidationLayers = {
 const std::vector<const char*> kDeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
+const size_t kMaxFramesInFlight = 2;
 
 #ifdef _DEBUG
 const bool kEnableValidationLayers = true;
@@ -70,15 +71,23 @@ private:
 		CreateFramebuffers();
 		CreateCommandPool();
 		CreateCommandBuffers();
+		CreateSyncObjects();
 	}
 
 	void MainLoop() {
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+			DrawFrame();
 		}
+		vkDeviceWaitIdle(vk_logical_device);
 	}
 
 	void CleanUp() {
+		for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+			vkDestroySemaphore(vk_logical_device, vk_image_available_semaphores[i], nullptr);
+			vkDestroySemaphore(vk_logical_device, vk_reder_finished_semaphores[i], nullptr);
+			vkDestroyFence(vk_logical_device, vk_fences[i], nullptr);
+		}
 		vkDestroyCommandPool(vk_logical_device, vk_command_pool, nullptr);
 		for (auto fb : vk_framebuffers) {
 			vkDestroyFramebuffer(vk_logical_device, fb, nullptr);
@@ -277,7 +286,7 @@ private:
 
 			auto CreateDebugUtilsMessengerExtFunc = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT");
 			//vkCreateDebugUtilsMessengerEXT
-			if (!CreateDebugUtilsMessengerExtFunc && CreateDebugUtilsMessengerExtFunc(vk_instance, &debug_create_info, nullptr, &vk_debug_messenger) != VK_SUCCESS) {
+			if (!CreateDebugUtilsMessengerExtFunc || CreateDebugUtilsMessengerExtFunc(vk_instance, &debug_create_info, nullptr, &vk_debug_messenger) != VK_SUCCESS) {
 				throw std::runtime_error("failed to create debug messender!");
 			}
 		}
@@ -636,11 +645,12 @@ private:
 	void CreateFramebuffers() {
 		vk_framebuffers.resize(vk_swapchain_image_views.size());
 		for (size_t i = 0; i < vk_swapchain_image_views.size(); ++i) {
+			VkImageView attachments[] = { vk_swapchain_image_views[i] };
 			VkFramebufferCreateInfo framebuffer_create_info = {};
 			framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebuffer_create_info.renderPass = vk_render_pass;
 			framebuffer_create_info.attachmentCount = 1;
-			framebuffer_create_info.pAttachments = &vk_swapchain_image_views[i];
+			framebuffer_create_info.pAttachments = attachments;
 			framebuffer_create_info.width = vk_swapchain_image_extent.width;
 			framebuffer_create_info.height = vk_swapchain_image_extent.height;
 			framebuffer_create_info.layers = 1;
@@ -683,20 +693,79 @@ private:
 			rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			rp_begin_info.renderPass = vk_render_pass;
 			rp_begin_info.framebuffer = vk_framebuffers[i];
-			rp_begin_info.renderArea.offset = {0, 0};
+			rp_begin_info.renderArea.offset = { 0, 0 };
 			rp_begin_info.renderArea.extent = vk_swapchain_image_extent;
-			VkClearValue clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+			VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
 			rp_begin_info.clearValueCount = 1;
 			rp_begin_info.pClearValues = &clear_color;
 
 			vkCmdBeginRenderPass(vk_command_buffers[i], &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-				vkCmdBindPipeline(vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline);
-				vkCmdDraw(vk_command_buffers[i], 3, 1, 0, 0);
+			vkCmdBindPipeline(vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline);
+			vkCmdDraw(vk_command_buffers[i], 3, 1, 0, 0);
 			vkCmdEndRenderPass(vk_command_buffers[i]);
 			if (vkEndCommandBuffer(vk_command_buffers[i]) != VK_SUCCESS) {
 				throw std::runtime_error("Failed to recode commad buffer!");
 			}
 		}
+	}
+
+	void CreateSyncObjects() {
+		vk_image_available_semaphores.resize(kMaxFramesInFlight);
+		vk_reder_finished_semaphores.resize(kMaxFramesInFlight);
+		vk_fences.resize(kMaxFramesInFlight);
+
+		VkSemaphoreCreateInfo semaphore_create_info = {};
+		semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		VkFenceCreateInfo fence_create_info = {};
+		fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+			if (vkCreateSemaphore(vk_logical_device, &semaphore_create_info, nullptr, &vk_image_available_semaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(vk_logical_device, &semaphore_create_info, nullptr, &vk_reder_finished_semaphores[i]) != VK_SUCCESS ||
+				vkCreateFence(vk_logical_device, &fence_create_info, nullptr, &vk_fences[i]) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create synchronization objects for a frame!");
+			}
+		}
+	}
+
+	void DrawFrame() {
+		vkWaitForFences(vk_logical_device, 1, &vk_fences[vk_current_frame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkResetFences(vk_logical_device, 1, &vk_fences[vk_current_frame]);
+
+		uint32_t image_index;
+		vkAcquireNextImageKHR(vk_logical_device, vk_swapchain, std::numeric_limits<uint64_t>::max(), 
+				vk_image_available_semaphores[vk_current_frame], VK_NULL_HANDLE, &image_index);
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		
+		VkSemaphore wait_semaphores[] = { vk_image_available_semaphores[vk_current_frame] };
+		VkSemaphore signal_semaphores[] = { vk_reder_finished_semaphores[vk_current_frame] };
+		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.pWaitDstStageMask = wait_stages;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &vk_command_buffers[image_index];
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = signal_semaphores;
+
+		if (vkQueueSubmit(vk_graphics_queue, 1, &submit_info, vk_fences[vk_current_frame]) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR present_info = {};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		present_info.waitSemaphoreCount = 1;
+		present_info.pWaitSemaphores = signal_semaphores;
+		VkSwapchainKHR swapchains[] = {vk_swapchain};
+		present_info.swapchainCount = 1;
+		present_info.pSwapchains = swapchains;
+		present_info.pImageIndices = &image_index;
+		vkQueuePresentKHR(vk_present_queue, &present_info);
+
+		vk_current_frame = (vk_current_frame + 1) % kMaxFramesInFlight;
 	}
 private:
 	int width;
@@ -726,6 +795,12 @@ private:
 	std::vector<VkFramebuffer> vk_framebuffers;
 	VkCommandPool vk_command_pool;
 	std::vector<VkCommandBuffer> vk_command_buffers;
+
+	std::vector<VkSemaphore> vk_image_available_semaphores;
+	std::vector<VkSemaphore> vk_reder_finished_semaphores;
+	std::vector<VkFence> vk_fences;
+
+	size_t vk_current_frame{ 0 };
 };
 
 int main() {

@@ -101,7 +101,7 @@ private:
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
-	size_t currentFrame = 0;
+	size_t vk_current_frame = 0;
 
 	void initWindow() {
 		glfwInit();
