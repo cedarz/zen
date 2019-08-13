@@ -1,25 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="资源文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="glfw">
-      <UniqueIdentifier>{c648ac6b-f6ff-4e87-9669-8f922877d99b}</UniqueIdentifier>
+      <UniqueIdentifier>{0a48f9e3-b50b-44f9-9ae9-ae3dd43cc57d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="..\glfw-3.3\src\context.c">
+      <Filter>glfw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glfw-3.3\src\init.c">
+      <Filter>glfw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glfw-3.3\src\input.c">
+      <Filter>glfw</Filter>
     </ClCompile>
     <ClCompile Include="..\glfw-3.3\src\win32_init.c">
       <Filter>glfw</Filter>
@@ -39,31 +41,28 @@
     <ClCompile Include="..\glfw-3.3\src\win32_window.c">
       <Filter>glfw</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\init.c">
+    <ClCompile Include="..\glfw-3.3\src\window.c">
       <Filter>glfw</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\input.c">
-      <Filter>glfw</Filter>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\vulkan.c">
-      <Filter>glfw</Filter>
+    <ClCompile Include="..\glad\src\glad.c">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\context.c">
+    <ClCompile Include="..\glfw-3.3\src\egl_context.c">
       <Filter>glfw</Filter>
     </ClCompile>
     <ClCompile Include="..\glfw-3.3\src\monitor.c">
       <Filter>glfw</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\window.c">
-      <Filter>glfw</Filter>
-    </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\egl_context.c">
+    <ClCompile Include="..\glfw-3.3\src\osmesa_context.c">
       <Filter>glfw</Filter>
     </ClCompile>
     <ClCompile Include="..\glfw-3.3\src\wgl_context.c">
       <Filter>glfw</Filter>
     </ClCompile>
-    <ClCompile Include="..\glfw-3.3\src\osmesa_context.c">
+    <ClCompile Include="..\glfw-3.3\src\vulkan.c">
       <Filter>glfw</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,10 +76,10 @@
     <ClInclude Include="..\glfw-3.3\src\egl_context.h">
       <Filter>glfw</Filter>
     </ClInclude>
-    <ClInclude Include="..\glfw-3.3\src\wgl_context.h">
+    <ClInclude Include="..\glfw-3.3\src\osmesa_context.h">
       <Filter>glfw</Filter>
     </ClInclude>
-    <ClInclude Include="..\glfw-3.3\src\osmesa_context.h">
+    <ClInclude Include="..\glfw-3.3\src\wgl_context.h">
       <Filter>glfw</Filter>
     </ClInclude>
   </ItemGroup>
