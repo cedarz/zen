@@ -5,6 +5,7 @@ Real-time rendering experiments.
 
 1. Master one or several rendering API.
 2. Experiment on rtr algorithms.
+3. Master WebGL/[three.js](https://threejs.org/docs/#manual/zh/introduction/How-to-use-WebGL2) as a convient tool to show cg case.
 
 ## TODO
 
