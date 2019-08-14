@@ -8,4 +8,4 @@ Real-time rendering experiments.
 
 ## TODO
 
-1. A wraper of OpenGL 460 core profile, learn from other repos.
+1. A wrapper of OpenGL 460 core profile, learn from other repos.
