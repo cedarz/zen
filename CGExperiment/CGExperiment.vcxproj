@@ -143,6 +143,7 @@
     <ClInclude Include="..\glfw-3.3\src\wgl_context.h" />
     <ClInclude Include="..\glfw-3.3\src\win32_joystick.h" />
     <ClInclude Include="..\glfw-3.3\src\win32_platform.h" />
+    <ClInclude Include="gl460\shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

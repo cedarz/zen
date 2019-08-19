@@ -12,6 +12,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="gl460">
+      <UniqueIdentifier>{7715eb66-c687-42fc-9fe0-beffa525da8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\glfw-3.3\src\context.c">
@@ -81,6 +84,9 @@
     </ClInclude>
     <ClInclude Include="..\glfw-3.3\src\wgl_context.h">
       <Filter>glfw</Filter>
+    </ClInclude>
+    <ClInclude Include="gl460\shader.h">
+      <Filter>gl460</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
