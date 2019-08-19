@@ -16,7 +16,7 @@ Shader::Shader(Shader&& other) noexcept:
 	other.id_ = 0;	
 }
 
-Shader& Shader::operator=(Shader&& other) {
+Shader& Shader::operator=(Shader&& other) noexcept {
 	std::swap(type_, other.type_);
 	std::swap(id_, other.id_);
 	std::swap(sources_, other.sources_);
@@ -25,6 +25,7 @@ Shader& Shader::operator=(Shader&& other) {
 
 Shader& Shader::addSource(std::string source) {
 	sources_.push_back(std::move(source));
+	return *this;
 }
 
 Shader& Shader::addFile(const std::string& filename) {

@@ -68,6 +68,12 @@
     <ClCompile Include="..\glfw-3.3\src\vulkan.c">
       <Filter>glfw</Filter>
     </ClCompile>
+    <ClCompile Include="gl460\shader.cpp">
+      <Filter>gl460</Filter>
+    </ClCompile>
+    <ClCompile Include="gl460\program.cpp">
+      <Filter>gl460</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\glfw-3.3\src\win32_joystick.h">
@@ -86,6 +92,9 @@
       <Filter>glfw</Filter>
     </ClInclude>
     <ClInclude Include="gl460\shader.h">
+      <Filter>gl460</Filter>
+    </ClInclude>
+    <ClInclude Include="gl460\program.h">
       <Filter>gl460</Filter>
     </ClInclude>
   </ItemGroup>

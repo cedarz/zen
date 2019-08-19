@@ -135,6 +135,8 @@
     <ClCompile Include="..\glfw-3.3\src\win32_time.c" />
     <ClCompile Include="..\glfw-3.3\src\win32_window.c" />
     <ClCompile Include="..\glfw-3.3\src\window.c" />
+    <ClCompile Include="gl460\program.cpp" />
+    <ClCompile Include="gl460\shader.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +145,7 @@
     <ClInclude Include="..\glfw-3.3\src\wgl_context.h" />
     <ClInclude Include="..\glfw-3.3\src\win32_joystick.h" />
     <ClInclude Include="..\glfw-3.3\src\win32_platform.h" />
+    <ClInclude Include="gl460\program.h" />
     <ClInclude Include="gl460\shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
