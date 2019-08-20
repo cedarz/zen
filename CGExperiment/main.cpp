@@ -102,7 +102,13 @@ int main()
 	simpleDepthShader.link();
 
 	//Shader simpleDepthShader("shaders/shadow_mapping_depth.vs", "shaders/shadow_mapping_depth.fs");
-	Shader debugDepthQuad("shaders/debug_quad.vs", "shaders/debug_quad_depth.fs");
+	//Shader debugDepthQuad("shaders/debug_quad.vs", "shaders/debug_quad_depth.fs");
+	gl460::Shader sq(gl460::Shader::Type::Vertex), fq(gl460::Shader::Type::Fragment);
+	sq.addFile("shaders/shadow_mapping_depth.vs").compile();
+	fq.addFile("shaders/shadow_mapping_depth.fs").compile();
+	gl460::Program debugDepthQuad;
+	debugDepthQuad.attachShaders({ sq, fq });
+	debugDepthQuad.link();
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -166,7 +172,8 @@ int main()
 	glProgramUniform1i(shader.id(), shader.uniformLocation("shadowMap"), 1);
 
 	debugDepthQuad.use();
-	debugDepthQuad.setInt("depthMap", 0);
+	//debugDepthQuad.setInt("depthMap", 0);
+	glProgramUniform1i(debugDepthQuad.id(), shader.uniformLocation("shadowMap"), 0);
 
 	// lighting info
 	// -------------
@@ -243,8 +250,11 @@ int main()
 		// render Depth map to quad for visual debugging
 		// ---------------------------------------------
 		debugDepthQuad.use();
-		debugDepthQuad.setFloat("near_plane", near_plane);
-		debugDepthQuad.setFloat("far_plane", far_plane);
+		//debugDepthQuad.setFloat("near_plane", near_plane);
+		//debugDepthQuad.setFloat("far_plane", far_plane);
+		glProgramUniform1f(debugDepthQuad.id(), shader.uniformLocation("near_plane"), near_plane);
+		glProgramUniform1f(debugDepthQuad.id(), shader.uniformLocation("shadowMap"), far_plane);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		//renderQuad();

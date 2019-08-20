@@ -24,7 +24,7 @@ Shader& Shader::operator=(Shader&& other) noexcept {
 }
 
 Shader& Shader::addSource(std::string source) {
-	std::cout << source << std::endl;
+	//std::cout << source << std::endl;
 	sources_.push_back(std::move(source));
 	return *this;
 }
