@@ -91,12 +91,17 @@ int main()
 	fv.addFile("shaders/shadow_mapping.fs").compile();
 	gl460::Program shader;
 	shader.attachShaders({sv, fv});
-	GLint err = glGetError();
 	shader.link();
 
 	//shader.validate();
+	gl460::Shader sd(gl460::Shader::Type::Vertex), fd(gl460::Shader::Type::Fragment);
+	sd.addFile("shaders/shadow_mapping_depth.vs").compile();
+	fd.addFile("shaders/shadow_mapping_depth.fs").compile();
+	gl460::Program simpleDepthShader;
+	simpleDepthShader.attachShaders({ sd, fd });
+	simpleDepthShader.link();
 
-	Shader simpleDepthShader("shaders/shadow_mapping_depth.vs", "shaders/shadow_mapping_depth.fs");
+	//Shader simpleDepthShader("shaders/shadow_mapping_depth.vs", "shaders/shadow_mapping_depth.fs");
 	Shader debugDepthQuad("shaders/debug_quad.vs", "shaders/debug_quad_depth.fs");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
@@ -209,7 +214,7 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
-		//renderScene(simpleDepthShader);
+		renderScene(simpleDepthShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// reset viewport
