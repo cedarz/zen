@@ -11,6 +11,7 @@
 #include <learnopengl/camera.h>
 //#include <learnopengl/model.h>
 #include "gl460/shader.h"
+#include "gl460/program.h"
 
 #include <iostream>
 
@@ -19,7 +20,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(const char *path);
-void renderScene(const Shader &shader);
+void renderScene(gl460::Program &shader);
 void renderCube();
 void renderQuad();
 
@@ -45,7 +46,7 @@ int main()
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -84,7 +85,17 @@ int main()
 
 	// build and compile shaders
 	// -------------------------
-	Shader shader("shaders/shadow_mapping.vs", "shaders/shadow_mapping.fs");
+	//Shader shader("shaders/shadow_mapping.vs", "shaders/shadow_mapping.fs");
+	gl460::Shader sv(gl460::Shader::Type::Vertex), fv(gl460::Shader::Type::Fragment);
+	sv.addFile("shaders/shadow_mapping.vs").compile();
+	fv.addFile("shaders/shadow_mapping.fs").compile();
+	gl460::Program shader;
+	shader.attachShaders({sv, fv});
+	GLint err = glGetError();
+	shader.link();
+
+	//shader.validate();
+
 	Shader simpleDepthShader("shaders/shadow_mapping_depth.vs", "shaders/shadow_mapping_depth.fs");
 	Shader debugDepthQuad("shaders/debug_quad.vs", "shaders/debug_quad_depth.fs");
 
@@ -145,9 +156,10 @@ int main()
 
 	// shader configuration
 	// --------------------
-	shader.use();
-	shader.setInt("diffuseTexture", 0);
-	shader.setInt("shadowMap", 1);
+	shader.use();	
+	glProgramUniform1i(shader.id(), shader.uniformLocation("diffuseTexture"), 0);
+	glProgramUniform1i(shader.id(), shader.uniformLocation("shadowMap"), 1);
+
 	debugDepthQuad.use();
 	debugDepthQuad.setInt("depthMap", 0);
 
@@ -197,7 +209,7 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
-		renderScene(simpleDepthShader);
+		//renderScene(simpleDepthShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// reset viewport
@@ -249,7 +261,7 @@ int main()
 
 // renders the 3D scene
 // --------------------
-void renderScene(const Shader &shader)
+void renderScene(gl460::Program &shader)
 {
 	// floor
 	glm::mat4 model = glm::mat4(1.0f);

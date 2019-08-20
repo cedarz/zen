@@ -24,6 +24,7 @@ Shader& Shader::operator=(Shader&& other) noexcept {
 }
 
 Shader& Shader::addSource(std::string source) {
+	std::cout << source << std::endl;
 	sources_.push_back(std::move(source));
 	return *this;
 }
@@ -51,6 +52,7 @@ bool Shader::compile(std::initializer_list<std::reference_wrapper<Shader>> shade
 		std::vector<GLint> lengths(shader.sources_.size(), 0);
 		for (std::size_t i = 0; i < shader.sources_.size(); ++i) {
 			pointers[i] = shader.sources_[i].data();
+			lengths[i] = shader.sources_[i].size();
 		}
 		glShaderSource(shader.id_, shader.sources_.size(), pointers.data(), lengths.data());
 		glCompileShader(shader.id_);
