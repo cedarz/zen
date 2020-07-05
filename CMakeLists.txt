@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.12)
 
-set(PROJECT "Zero")
+set(PROJECT "Zen")
 project(${PROJECT})
 
 
@@ -14,6 +14,9 @@ include_directories(
 )
 			
 file(GLOB_RECURSE VK_SOURCES "DRender/*.cpp" "DRender/*.h")
+
+###### project #####
+add_subdirectory(CGExperiment)
 
 ###### third_party #####
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -76,5 +79,3 @@ add_custom_command(
 	TARGET ${PROJECT} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/shaders"  $<TARGET_FILE_DIR:${PROJECT}>/shaders
 )
-
-
