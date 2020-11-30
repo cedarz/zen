@@ -10,7 +10,6 @@
 #include <learnopengl/shader.h>
 #include <learnopengl/camera.h>
 //#include <learnopengl/model.h>
-#include "gl460/shader.h"
 #include "gl460/program.h"
 
 #include <iostream>
@@ -50,10 +49,6 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
-
 	// glfw window creation
 	// --------------------
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -84,30 +79,20 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// build and compile shaders
-	// -------------------------
-	//Shader shader("shaders/shadow_mapping.vs", "shaders/shadow_mapping.fs");
-	gl460::Shader sv(gl460::Shader::Type::Vertex), fv(gl460::Shader::Type::Fragment);
-	sv.addFile("shaders/shadow_mapping.vs").compile();
-	fv.addFile("shaders/shadow_mapping.fs").compile();
 	gl460::Program shader;
-	shader.attachShaders({sv, fv});
+	shader.attachShaders({ {gl460::ShaderType::Vertex, "shaders/shadow_mapping.vs"},
+		{gl460::ShaderType::Fragment, "shaders/shadow_mapping.fs" } });
 	shader.link();
 
 	//shader.validate();
-	gl460::Shader sd(gl460::Shader::Type::Vertex), fd(gl460::Shader::Type::Fragment);
-	sd.addFile("shaders/shadow_mapping_depth.vs").compile();
-	fd.addFile("shaders/shadow_mapping_depth.fs").compile();
 	gl460::Program simpleDepthShader;
-	simpleDepthShader.attachShaders({ sd, fd });
+	simpleDepthShader.attachShaders({ {gl460::ShaderType::Vertex, "shaders/shadow_mapping_depth.vs"},
+		{gl460::ShaderType::Fragment, "shaders/shadow_mapping_depth.fs" } });
 	simpleDepthShader.link();
 
-	//Shader simpleDepthShader("shaders/shadow_mapping_depth.vs", "shaders/shadow_mapping_depth.fs");
-	//Shader debugDepthQuad("shaders/debug_quad.vs", "shaders/debug_quad_depth.fs");
-	gl460::Shader sq(gl460::Shader::Type::Vertex), fq(gl460::Shader::Type::Fragment);
-	sq.addFile("shaders/shadow_mapping_depth.vs").compile();
-	fq.addFile("shaders/shadow_mapping_depth.fs").compile();
 	gl460::Program debugDepthQuad;
-	debugDepthQuad.attachShaders({ sq, fq });
+	debugDepthQuad.attachShaders({ {gl460::ShaderType::Vertex, "shaders/shadow_mapping_depth.vs"},
+		{gl460::ShaderType::Fragment, "shaders/shadow_mapping_depth.fs" } });
 	debugDepthQuad.link();
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes

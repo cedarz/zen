@@ -99,5 +99,5 @@ add_custom_command(
 # copy resource
 add_custom_command(
 	TARGET ${VK_DEMO} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/shaders"  $<TARGET_FILE_DIR:${VK_DEMO}>/shaders
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/DRender/shaders"  $<TARGET_FILE_DIR:${VK_DEMO}>/shaders
 )

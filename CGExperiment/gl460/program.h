@@ -1,14 +1,35 @@
 #ifndef GL_PROGRAM_H
 #define GL_PROGRAM_H
-
 #include <glad/glad.h>
-#include "shader.h"
-#include <utility>
-#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <utility>
+#include <string>
+#include <map>
+
 namespace gl460 {
+enum class ShaderType : GLenum {
+	Vertex = GL_VERTEX_SHADER,
+	TesselationControl = GL_TESS_CONTROL_SHADER,
+	TesselationEvalute = GL_TESS_EVALUATION_SHADER,
+	Geometry = GL_GEOMETRY_SHADER,
+	Fragment = GL_FRAGMENT_SHADER,
+	Compute = GL_COMPUTE_SHADER
+};
+
+class Shader {
+public:
+	explicit Shader(const ShaderType type, const char* shader_file);
+	GLuint id() const { return id_; }
+	bool compile();
+	~Shader();
+private:
+	GLuint id_;
+	ShaderType type_;
+	std::string code_;
+};
+
 class Program {
 public:
 	explicit Program();
@@ -19,34 +40,38 @@ public:
 
 	~Program();
 
-	GLuint id() const { return id_; }
+	/// shader source
+	void attachShaders(gl460::ShaderType type, const std::string& path);
+	void attachShaders(std::map<gl460::ShaderType, std::string> shaders);
+
+
+
+	GLuint id() const { return program_id_; }
 	std::pair<bool, std::string> validate();
 	
 	// void dispatchCompute(const Vector3ui& work_group_count);
 
-	static bool link(std::initializer_list<std::reference_wrapper<Program>> shaders);
+	bool link();
+	void use();
 
-	void attachShader(Shader& shader);
-	void attachShaders(std::initializer_list<std::reference_wrapper<Shader>> shaders);
-	bool link() { return link({*this}); }
 	GLuint uniformLocation(const std::string& name) {
-		const GLint location = glGetUniformLocation(id_, name.c_str());
+		const GLint location = glGetUniformLocation(program_id_, name.c_str());
 		return location;
 	}
 
-	void use();
+	
 
 	void setMat4(const std::string &name, const glm::mat4 &mat) {
 		//glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-		glProgramUniformMatrix4fv(id_, uniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+		glProgramUniformMatrix4fv(program_id_, uniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
 	}
 
 	void setVec3(const std::string& name, const glm::vec3 v) {
-		glProgramUniform3fv(id_, uniformLocation(name), 1, glm::value_ptr(v));
+		glProgramUniform3fv(program_id_, uniformLocation(name), 1, glm::value_ptr(v));
 	}
 
 private:
-	GLuint id_ = 0;
+	GLuint program_id_ = 0;
 };
 }
 

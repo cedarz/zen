@@ -1,75 +1,113 @@
 #include "program.h"
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
-gl460::Program::Program() {
-	id_ = glCreateProgram();
+namespace gl460{
+
+Shader::Shader(const ShaderType type, const char* shader_file) {
+	id_ = glCreateShader(static_cast<GLenum>(type));
+	std::ifstream file{ shader_file, std::ifstream::binary };
+	if (!file) {
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+	} else {
+		file.seekg(0, std::ios::end);
+		size_t sz = file.tellg();
+		file.seekg(0, std::ios::beg);
+		//std::vector<char> source(sz);
+		code_.resize(sz);
+		file.read(code_.data(), sz);
+	}
 }
 
-gl460::Program::Program(Program&& other) noexcept : id_(other.id_) {
-	other.id_ = 0;
+bool Shader::compile() {
+	const char* shader_str = code_.c_str();
+	glShaderSource(id_, 1, &shader_str, nullptr);
+	glCompileShader(id_);
+
+	GLint success, log_length;
+	glGetShaderiv(id_, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &log_length);
+
+	std::string message(log_length, '\0');
+	if (!success) {
+		glGetShaderInfoLog(id_, log_length, nullptr, &message[0]);
+		std::cout << "Shader::compile error : " << message << std::endl;
+	}
+	return success;
 }
 
-gl460::Program & gl460::Program::operator=(Program && other) noexcept
+Shader::~Shader() {
+	if (!id_) return;
+	glDeleteShader(id_);
+}
+
+Program::Program() {
+	program_id_ = glCreateProgram();
+}
+
+Program::Program(Program&& other) noexcept : program_id_(other.program_id_) {
+	other.program_id_ = 0;
+}
+
+Program & gl460::Program::operator=(Program && other) noexcept
 {
-	std::swap(id_, other.id_);
+	std::swap(program_id_, other.program_id_);
 	return *this;
 }
 
-gl460::Program::~Program() {
-	if (id_) {
-		glDeleteProgram(id_);
+Program::~Program() {
+	if (program_id_) {
+		glDeleteProgram(program_id_);
 	}
-
 }
 
-std::pair<bool, std::string> gl460::Program::validate() {
-	glValidateProgram(id_);
+std::pair<bool, std::string> Program::validate() {
+	glValidateProgram(program_id_);
 	GLint success = true, log_length = 0;
-	glGetProgramiv(id_, GL_VALIDATE_STATUS, &success);
-	glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &log_length);
+	glGetProgramiv(program_id_, GL_VALIDATE_STATUS, &success);
+	glGetProgramiv(program_id_, GL_INFO_LOG_LENGTH, &log_length);
 
 	std::string log(log_length, '\n');
 	if (log_length > 1) {
-		glGetProgramInfoLog(id_, log_length, nullptr, &log[0]);
+		glGetProgramInfoLog(program_id_, log_length, nullptr, &log[0]);
 	}
 	log.resize(std::max(log_length, 1) - 1);
 	return {success, std::move(log)};
 }
 
-bool gl460::Program::link(std::initializer_list<std::reference_wrapper<Program>> shaders)
-{
-	bool all_success = true;
-	for (Program& shader : shaders) {
-		glLinkProgram(shader.id_);
-		GLint success = true, log_length = 0;
-		glGetProgramiv(shader.id_, GL_LINK_STATUS, &success);
-		glGetProgramiv(shader.id_, GL_INFO_LOG_LENGTH, &log_length);
-		std::string log(log_length, '\n');
-		if (log_length > 1) {
-			glGetProgramInfoLog(shader.id_, log_length, nullptr, &log[0]);
-		}
-		log.resize(std::max(log_length, 1) - 1);
-		if (!success) {
-			std::cout << "Link Program Failed : " << log << std::endl;
-		}
-		all_success = all_success && success;
+bool Program::link() {
+	glLinkProgram(program_id_);
+	GLint success = true, log_length = 0;
+	glGetProgramiv(program_id_, GL_LINK_STATUS, &success);
+	glGetProgramiv(program_id_, GL_INFO_LOG_LENGTH, &log_length);
+	std::string log(log_length, '\n');
+	if (log_length > 1) {
+		glGetProgramInfoLog(program_id_, log_length, nullptr, &log[0]);
 	}
-	return all_success;
+	log.resize(std::max(log_length, 1) - 1);
+	if (!success) {
+		std::cout << "Link Program Failed : " << log << std::endl;
+	}
+
+	return success;
 }
 
-void gl460::Program::attachShader(Shader & shader) {
-	glAttachShader(id_, shader.id());
+
+void Program::attachShaders(gl460::ShaderType type, const std::string& path) {
+	Shader s(type, path.c_str());
+	s.compile();
+	glAttachShader(program_id_, s.id());
 }
 
-void gl460::Program::attachShaders(std::initializer_list<std::reference_wrapper<Shader>> shaders) {
-	for (Shader& s : shaders) {
-		attachShader(s);
+void Program::attachShaders(std::map<gl460::ShaderType, std::string> shaders) {
+	for (auto& iter : shaders) {
+		attachShaders(iter.first, iter.second);
 	}
 }
 
-void gl460::Program::use() {
-	glUseProgram(id_);
+void Program::use() {
+	glUseProgram(program_id_);
 }
-
+} // namespace gl460
 
